@@ -1,5 +1,18 @@
-- people in the same geographic region may look at the same documents (e.g. for class, cultural, etc)
-- eliminate cost of ownership to wikimedia (i.e. their fundrasiers are mostly to host servers)
+## Document Phases
+1. Creation
+2. Propagation
+3. Revision (multiple revisions at same time or during propagation i.e. merge conflicts)
+4. Removal
+
+## System Phases
+- Replication (how to choose which nodes to copy the document too)
+- index creation (MapReduce)
+- searching index
+
+## System Requirements
+- High availability
+-
+
 
 ## Challenges:
 - document discovery (esp. newly created documents)
@@ -8,12 +21,14 @@
   - make available unpopular articles
 - indexing content
 - **Searching** for content (There are 10 different algorithm in Survey of search and optimization of P2P networks)
-
+- identifying/addressing nodes
 
 
 ## Other Ideas
 - Multicast documents: when user A requests a document that happens to be on node X, leave the
 document on every node between node X and user A.
+- people in the same geographic region may look at the same documents (e.g. for class, cultural, etc)
+- eliminate cost of ownership to wikimedia (i.e. their fundrasiers are mostly to host servers)
 
 
 ## Algorithms

@@ -35,6 +35,7 @@ retrieval (by maintaining some global state) and semantics (how to locate resour
 1. Document titles are unique
 2. Once node with desired document is found, use client/server model with HTTP
 3. The part of server component of app is already done (i.e. CouchDB)
+
 ### System
 1. Nodes are non-Byzantine (may relax: relates to point (7) in questions section)
 2. A node's IP address doesn't change (may relax: relates to point (8) in questions section)

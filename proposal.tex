@@ -17,7 +17,7 @@
 Wikipedia is a free online collaborative encyclopedia hosted by Wikimedia and
 funded by the non-profit Wikimedia foundation. We propose a peer-to-peer version
 of Wikipedia for two primary reasons. First, decentralization helps eliminate
-proprietary interests in the system's infrastructure; instead of trust being
+proprietary interests in the system's infrastructure: instead of trust being
 placed in dedicated servers, trust is diffused over all participants. Second,
 the need for administration is diminished, since there is no dedicated
 infrastructure to manage.
@@ -26,7 +26,7 @@ Our project addresses two major issues that arise in a peer-to-peer encyclopedia
 article replication and article discovery. Replication allows articles to be
 available despite node failures but requires consistent versioning across replicas.
 Discovery of articles is done via a search of the network. The simplest approach
-is to traverse the entire network until the required article is found but this
+is to traverse the entire network until the required article is found, but this
 results in a search time that is proportional to the number of nodes and generates
 a large quantity of traffic. An alternative approach is to maintain a structure (overlay)
 on top of the physical network to bound the search time. These issues are discussed
@@ -51,18 +51,18 @@ requestee regardless of the node hosting the article.
 
 To ensure that versions are consistent across nodes we will employ Interval Tree
 Clocks (ITC) \cite{abf08}. We choose ITCs over simpler version vectors \cite{ppr83}
-or version stamps \cite{abf02} because it does not require global ids nor global
-coordination to manage versions and unlike version stamps, it is suitable for
-practical use \cite{abf07}. We will use the core operations: \texttt{fork},
-\texttt{event} and \texttt{join} that are used to model causal tracking mechanisms
+or version stamps \cite{abf02} because it does not require global IDs or global
+coordination to manage versions and, unlike version stamps, it is suitable for
+practical use \cite{abf07}. We will use the core operations -- \texttt{fork},
+\texttt{event}, and \texttt{join} -- that are used to model causal tracking mechanisms
 in ITC. These operators act on stamps (logical clocks) whose structure is a pair
-$(i,e)$ where $i$ is an id and $e$ is a version vector. Thus, for our application,
+$(i,e)$ where $i$ is an ID and $e$ is a version vector. Thus, for our application,
 causality is the pointwise partial order: $e \leq e' \textrm{ iff } \forall{k}, e[k] \leq e'[k]$.
 We will use the following definitions to implement the operators:
 
 \begin{itemize}
   \item[\textbf{\texttt{fork}}] Clone the causal past of a stamp, outputting a pair of stamps that
-  have identical copies of the event component and distinct ids:
+  have identical copies of the event component and distinct IDs:
   $\texttt{fork}(i,e) = \left((i_{1},e),(i_{2},e)\right)$ such that $i_{2} \ne i_{1}$.
 
   \item[\textbf{\texttt{event}}] Increments a counter associated to the identity in the stamp:
@@ -93,13 +93,22 @@ We explain how we plan to achieve these requirements in the next section.
 We make the following assumptions about the system:
 \begin{itemize}
   \item Nodes fail (app isn’t running) independently and with the same probability $p$.
-  \item No Byzantine faults or application bugs.
+  \item There are no Byzantine faults or application bugs.
   \item Messages will not be dropped or corrupted.
   \item Messages may be delayed but will be ordered correctly.
 \end{itemize}
 
 \subsection{Article Discovery}
-TODO: Will just be a flooding search.
+For our initial pass, we will use an unstructured overlay and use a broadcast or
+flooding search where each node is queried until the requested article is found. There are
+two nice features of this approach: (1) it is simple to implement; and (2) it is
+very robust to both churn and query types. However, this method can be very slow
+for large networks. One way to improve performace is to use an intelligent search
+algorithm which uses the past behaviour of the network by having each peer
+autonomously decide which of its peers are likely to answer the query \cite{kgz02}.
+We may also evaluate structured overlays where nodes are added and removed such
+that each node maintains some information about how to reach other nodes in the
+network.
 
 \subsection{Article Replication}
 An article must be replicated to a sufficient number of nodes to guarantee (up to
@@ -118,7 +127,7 @@ Otherwise, the client modifies the content of the latest version.
 
 We use ITC \footnote{We will use the Go ITC library https://github.com/fgrid/itc} to guarantee
 consistent versioning across replicas. For forking operations we will use the MAC
-address of the node to generate the new id.  \\
+address of the node to generate the new id. \\
 
 \noindent
 Creating an article

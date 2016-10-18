@@ -1,11 +1,14 @@
 \documentclass{article}
 
 \usepackage[margin=1in]{geometry}
+\usepackage{csquotes}
 \usepackage{enumitem}
+
 
 
 \title{Peer-to-Peer Wikipedia}
 \author{Rain Gu and Nick Bradley}
+\date{October 18, 2016}
 
 \begin{document}
 \maketitle
@@ -14,7 +17,7 @@
 Wikipedia is a free online collaborative encyclopedia hosted by Wikimedia and
 funded by the non-profit Wikimedia foundation. We propose a peer-to-peer version
 of Wikipedia for two primary reasons. First, decentralization helps eliminate
-proprietary interests in the system’s infrastructure; instead of trust being
+proprietary interests in the system's infrastructure; instead of trust being
 placed in dedicated servers, trust is diffused over all participants. Second,
 the need for administration is diminished, since there is no dedicated
 infrastructure to manage.
@@ -25,7 +28,7 @@ available despite node failures but requires consistent versioning across replic
 Discovery of articles is done via a search of the network. The simplest approach
 is to traverse the entire network until the required article is found but this
 results in a search time that is proportional to the number of nodes and generates
-a large quantity of traffic. An alternative approach is to maintain a structure
+a large quantity of traffic. An alternative approach is to maintain a structure (overlay)
 on top of the physical network to bound the search time. These issues are discussed
 in the next section.
 
@@ -33,16 +36,18 @@ in the next section.
 A peer-to-peer network consists of distributed nodes that make some of their
 resources available to others without the use of central coordination. Nodes are
 both consumers and suppliers of resources and may leave/fail or join the network
-at any time. There are three main peer-to-peer architectures: unstructured,
-structured and hybrid. Unstructured networks …
+at any time. Nodes can be organized using overlays. An unstructured overlay is
+\enquote{an overlay in which a node relies on its adjacent nodes for delivery of
+messages to other nodes in the overlay} \cite{byl08}. A structured overlay is
+\enquote{an overlay in which nodes cooperatively maintain routing information
+about how to reach all nodes in the overlay} \cite{byl08}. There is a trade-off
+between search efficiency and routing maintenance between the two overlays.
 
 Replication of content across nodes in any type of distributed system is important
-for ensuring availability. However, replication increases complexity by having
-to ensure that content is successfully distributed across a sufficient number of
-nodes and that the content has the same version on all nodes. That is, the same
-content to be shown to the requestee regardless of the node hosting the article.
-
-…replication on unstructured network => Nodes with sufficient space respond with uptime; master chooses subset; synchronizes versions.
+for ensuring availability. However, replication increases complexity by requiring
+that content be successfully distributed across a sufficient number of nodes while also
+maintaining consistent versions. That is, the same content must be shown to the
+requestee regardless of the node hosting the article.
 
 To ensure that versions are consistent across nodes we will employ Interval Tree
 Clocks (ITC) \cite{abf08}. We choose ITCs over simpler version vectors \cite{ppr83}
@@ -76,29 +81,42 @@ To be a useful service, our peer-to-peer encyclopedia will fulfill two requireme
   leftmargin=*,
   label=(SG\arabic*)
 ]
-  \item The latest version of every article will be available with high probability
-  \item Versioning of articles is consistent across all nodes storing the article
+  \item The latest version of every article will be available with high probability, and
+  \item Versioning of articles is consistent across all nodes storing the article.
 \end{enumerate}
 
 \noindent
 We explain how we plan to achieve these requirements in the next section.
 
 \section{Proposed Approach}
+\subsection{Assumptions}
+We make the following assumptions about the system:
+\begin{itemize}
+  \item Nodes fail (app isn’t running) independently and with the same probability $p$.
+  \item No Byzantine faults or application bugs.
+  \item Messages will not be dropped or corrupted.
+  \item Messages may be delayed but will be ordered correctly.
+\end{itemize}
+
 \subsection{Article Discovery}
+TODO: Will just be a flooding search.
 
 \subsection{Article Replication}
 An article must be replicated to a sufficient number of nodes to guarantee (up to
 some probability) that the content will be available any time it is modified.
 
-\textbf{Choosing replica nodes.}
+\textbf{Choosing replica nodes.} To guarantee an article is available with probability
+$\alpha$, we send the article to $n \geq \lceil \frac{\log{(1-\alpha)}}{\log{p}} \rceil$
+ nodes. We keep sending the article to different nodes until we receive $n$ responses
+ (there is no harm if the article is on more than $n$ nodes).
 
 \textbf{Determining version number.} If a client wishes to modify an article,
 then the client must first find the latest version of the article using the method
-described in the article discovery section. If no article is found, than the client
+described in the article discovery section. If no article is found, then the client
 is creating a new article (this is true with high probability because of SG1).
 Otherwise, the client modifies the content of the latest version.
 
-We use ITC \footnote{We will use the Go ITC library \cite{itclib}} to guarantee
+We use ITC \footnote{We will use the Go ITC library https://github.com/fgrid/itc} to guarantee
 consistent versioning across replicas. For forking operations we will use the MAC
 address of the node to generate the new id.  \\
 
@@ -110,7 +128,7 @@ Creating an article
 \end{itemize}
 
 \noindent
-Updating an article
+Modifying an article
 \begin{itemize}[label={}]
   \item Fork the latest version from some node
   \item Modify the content of the article
@@ -123,9 +141,33 @@ Deleting an article (not implemented: can't guarantee that article is removed
 from all nodes)
 
 \section{Evaluation Methodology}
+To test the algorithms and protocols we designed and implemented, we will build
+an application in Go with simple user interface (i.e. HTML). Since p2p Wikipedia
+is targeting to be used over internet, we will build several nodes using proxy IP
+to simulate the real world scenarios. The top one attribute of the application to
+test is SG2: Versioning of articles is consistent across all nodes storing the
+articles, since SG1 is achieved mostly by assumption. \\
 
+\noindent
+The cases to test are:
+\begin{enumerate}
+  \item a client read an article.
+  \item a client update an article while no other clients updating the same articles in a close time interval.
+  \item multiple clients are updating the same article in a close time interval.
+  \item a new client(node) joins the system and bootstrap.
+\end{enumerate}
+For each cases, we will also test some cases with the faulting nodes or network failure.
+The other technique we are using would be the GoVector Library to trace the message orders.
 
 \section{Timeline}
+
+\begin{tabular*}{\textwidth}{l @{\extracolsep{\fill}} ll}
+  Set up Node Template and Data Structures (i.e. ITC). && Oct 27 \\
+  Implement Search \& Read operations and protocols. && Nov 11 \\
+  Implement Update operation and protocols. && Nov 20 \\
+  Design a simple UI && Nov 23 \\
+  Final Encapsulation \& Report && Nov 30 \\
+\end{tabular*}
 
 
 \bibliographystyle{abbrv}

@@ -1,4 +1,14 @@
 #Implementation Specifications
+##Notes
+ - Why not use dotted version vectors? They assume fixed set of replica nodes (e.g. servers)
+  > In the future, we intend to study how the underlying
+idea of dotted version vectors can be applied to
+other mechanisms to track causality, such as extending
+Interval Tree Clocks [14] in order to better handle
+membership changes in the set of replica nodes.
+> _last paragraph of dottedVersionVectors.pdf_
+
+
 ##Definitions
 A `node` is the process that will act as our app.
 Properties:
@@ -32,7 +42,7 @@ B = [{a, 3}, {b, 2}, {c, 1}]
 ```
 Above, **B** is an ancestor of **A**. We say that **A** *dominates* **B**. **A** has seen an extra event `({a,4})` which means its clock shows a later logical time that **B**. You can think of _dominates_ as _greater than_: `A > B`. We can discard all information in **B** since it is contained in **A**. This is more meaningful than just a greater temporal timestamp; with a dominated Version Vector we _know_ for certain that the events in **B** caused **A**. A wall-clock derived timestamp does not convey this information.
 
-_Dominates_ is a stronger relationship than _descends_. For any pair of Version Vectors **A decends B** if **A** summarises all the events **B** does. So the _equal_ Version Vectors descend each other. You can think of _descends as greater than or equal_: `A >= B`. 
+_Dominates_ is a stronger relationship than _descends_. For any pair of Version Vectors **A decends B** if **A** summarises all the events **B** does. So the _equal_ Version Vectors descend each other. You can think of _descends as greater than or equal_: `A >= B`.
 ```
 A = []
 B = [{a,1}]

@@ -1,3 +1,9 @@
 # CPSC 538B Distributed Systems Project
 
-See [notes.md](https://github.com/nickbradley/538b-project/blob/master/notes.md) for initial thoughts.
+## Code
+### Setup
+
+
+## Reports
+See the docs directory for everything that needs to be submitted as a report (i.e.
+the proposal and the final report).
